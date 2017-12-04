@@ -79,9 +79,10 @@ func (a *App) handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("newly generated token", token.AccessToken)
-
-	a.saveUserCredentials(w, body, token.AccessToken)
+	err = a.saveUserCredentials(w, body, token.AccessToken)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	http.Redirect(w, r, "/index", http.StatusSeeOther)
 }

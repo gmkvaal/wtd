@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"database/sql"
-	"fmt"
 )
 
 type UserInfo struct {
@@ -32,28 +31,23 @@ func ExtractUserData(body []byte) UserInfo {
 }
 
 
-func saveUserToDB(db *sql.DB, email string, token string, validUntil int64) (int64, error) {
+func saveUserToDB(db *sql.DB, email string, token string, validUntil int64) error {
 
 	sqlStatement := `
 		INSERT INTO verifiedusers (email, gtoken, validuntil)
 		VALUES ($1, $2, $3)`
-	res, err := db.Exec(sqlStatement, email, token, validUntil)
+	_, err := db.Exec(sqlStatement, email, token, validUntil)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	affectedRows, err := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-
-	return affectedRows, nil
+	return nil
 }
 
 func updateTokenInDB(db *sql.DB, email string, token string, validUntil int64) error {
 
 	sqlStatement :=
-		`UPDATE verifiedusers SET gtoken=$1, validuntil=$1 WHERE email=$2`
+		`UPDATE verifiedusers SET gtoken=$1, validuntil=$2 WHERE email=$3`
 	_, err := db.Exec(sqlStatement, token, validUntil, email)
 	if err != nil {
 		return err
@@ -83,18 +77,19 @@ func checkIfEmailAlreadyInDB(db *sql.DB, email string, token string, validUntil 
 
 }
 
-func checkIfUserIsValidated(db *sql.DB, email string, token string, validUntil int64) (error) {
+func checkIfUserIsValidated(db *sql.DB, email string, token string, validUntil int64) (bool, error) {
 
 	var dbToken string
 
 	sqlStatement := `SELECT gtoken FROM verifiedusers WHERE email=$1`
 	err := db.QueryRow(sqlStatement, email).Scan(&dbToken)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	fmt.Println("token from DB", dbToken)
-	fmt.Println("token from user", token)
+	if dbToken == token {
+		return true, nil
+	}
 
-	return err
+	return false, err
 }

@@ -44,21 +44,28 @@ func (a *App) initializeRoutes() {
 
 // saveUserCredentials saves the user email, token, and duration of validity both to
 // the DB and as a cookie. This is matched for user validation.
-func (a *App) saveUserCredentials(w http.ResponseWriter, body []byte, token string) {
+func (a *App) saveUserCredentials(w http.ResponseWriter, body []byte, token string) error {
 
 	validUntil := time.Now().Add(3600*time.Second)  // User token is valid for one hour
 
 	ui := ExtractUserData(body)
 
+	fmt.Println("checkifemail")
 	rewrite, err := checkIfEmailAlreadyInDB(a.DB, ui.Email, token, validUntil.Unix())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if rewrite {
-		updateTokenInDB(a.DB, ui.Email, token, validUntil.Unix())
+		fmt.Println("rewrite")
+		err = updateTokenInDB(a.DB, ui.Email, token, validUntil.Unix())
 	} else {
-		saveUserToDB(a.DB, ui.Email, token, validUntil.Unix())
+		fmt.Println("save to DB")
+		err = saveUserToDB(a.DB, ui.Email, token, validUntil.Unix())
+	}
+
+	if err != nil {
+		return err
 	}
 
 	cookie := http.Cookie{Name: "gAppToken", Value: token, Expires: validUntil}
@@ -67,6 +74,13 @@ func (a *App) saveUserCredentials(w http.ResponseWriter, body []byte, token stri
 	cookie = http.Cookie{Name: "gAppEmail", Value: ui.Email, Expires: validUntil}
 	http.SetCookie(w, &cookie)
 
+	return nil
+}
+
+func (a *App) lolHandler(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		redirectToLogin(w, r)
+	}
 }
 
 func (a *App) verifiedHandler(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
@@ -75,28 +89,40 @@ func (a *App) verifiedHandler(fn func(http.ResponseWriter, *http.Request)) http.
 
 		tokenFromUser, err := r.Cookie("gAppToken")
 		if err != nil {
+			fmt.Println("e1")
+			redirectToLogin(w, r)
 			return
 		}
 
 		emailFromUser, err := r.Cookie("gAppEmail")
 		if err != nil {
+			fmt.Println("e2")
+			redirectToLogin(w, r)
 			return
 		}
 
-		err = checkIfUserIsValidated(a.DB, emailFromUser.Value, tokenFromUser.Value, 11)
+		accepted, err := checkIfUserIsValidated(a.DB, emailFromUser.Value, tokenFromUser.Value, 11)
 		if err != nil {
+			fmt.Println("e3")
+			redirectToLogin(w, r)
 			return
 		}
 
-		fn(w, r)
+		if accepted {
+			fmt.Println("accepted")
+			fn(w, r)
+			return
+		} else {
+			fmt.Println("e4")
+			redirectToLogin(w, r)
+		}
 	}
 }
 
+func redirectToLogin(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/GoogleLogin", http.StatusSeeOther)
+}
 
 func index(w http.ResponseWriter, r *http.Request) {
-	cookie, _ := r.Cookie("gAppToken")
-	fmt.Fprint(w, cookie)
-
-	cookie, _ = r.Cookie("gAppEmail")
-	fmt.Fprint(w, cookie)
+	fmt.Fprint(w,"Welcome to the index")
 }
