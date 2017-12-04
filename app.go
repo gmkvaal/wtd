@@ -38,7 +38,7 @@ func (a *App) initializeRoutes() {
 	//r := mux.NewRouter()
 	a.Router.HandleFunc("/GoogleLogin", handleGoogleLogin)
 	a.Router.HandleFunc("/GoogleCallback", a.handleGoogleCallback)
-	a.Router.HandleFunc("/index", index)
+	a.Router.HandleFunc("/index", a.verifiedHandler(index))
 }
 
 
@@ -49,7 +49,17 @@ func (a *App) saveUserCredentials(w http.ResponseWriter, body []byte, token stri
 	validUntil := time.Now().Add(3600*time.Second)  // User token is valid for one hour
 
 	ui := ExtractUserData(body)
-	saveUserToDB(a.DB, ui.Email, token, validUntil.Unix())
+
+	rewrite, err := checkIfEmailAlreadyInDB(a.DB, ui.Email, token, validUntil.Unix())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if rewrite {
+		updateTokenInDB(a.DB, ui.Email, token, validUntil.Unix())
+	} else {
+		saveUserToDB(a.DB, ui.Email, token, validUntil.Unix())
+	}
 
 	cookie := http.Cookie{Name: "gAppToken", Value: token, Expires: validUntil}
 	http.SetCookie(w, &cookie)
@@ -59,9 +69,28 @@ func (a *App) saveUserCredentials(w http.ResponseWriter, body []byte, token stri
 
 }
 
-//func (a *App) verifiedHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+func (a *App) verifiedHandler(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 
-//}
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		tokenFromUser, err := r.Cookie("gAppToken")
+		if err != nil {
+			return
+		}
+
+		emailFromUser, err := r.Cookie("gAppEmail")
+		if err != nil {
+			return
+		}
+
+		err = checkIfUserIsValidated(a.DB, emailFromUser.Value, tokenFromUser.Value, 11)
+		if err != nil {
+			return
+		}
+
+		fn(w, r)
+	}
+}
 
 
 func index(w http.ResponseWriter, r *http.Request) {
