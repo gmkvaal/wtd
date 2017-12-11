@@ -1,0 +1,37 @@
+package readjson
+
+import (
+	"io"
+	"os"
+	"path/filepath"
+	"log"
+	"io/ioutil"
+	"encoding/json"
+	)
+
+type Parser interface {
+	ParseJSON([]byte) error
+}
+
+// Load unmarhsals the .json format config file into the config struct
+func Load(configFile string, p Parser) {
+
+	var err error
+	var absPath string
+	var input = io.ReadCloser(os.Stdin)
+	if absPath, err = filepath.Abs(configFile); err != nil {
+		log.Fatalln(err)
+	}
+
+	if input, err = os.Open(absPath); err != nil {
+		log.Fatalln(err)
+	}
+
+	jsonBytes, err := ioutil.ReadAll(input)
+	input.Close()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	json.Unmarshal(jsonBytes, &p)
+}

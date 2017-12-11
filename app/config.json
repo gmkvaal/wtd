@@ -1,0 +1,29 @@
+{
+  "Database": {
+     "Postgres": {
+       "User": "postgres",
+       "Password": "testpass",
+       "Name": "whattodo",
+       "DriverName": "postgres"
+     }
+  },
+  "Server": {
+    "Hostname": "http://127.0.0.1",
+    "HTTPPort": 9090
+  },
+  "Session": {
+    "Name": "gAppSession",
+    "Options": {
+      "Path": "/",
+      "MaxAge": 28800
+    }
+  },
+  "OAuth": {
+    "Google": {
+      "RedirectURL": "http://127.0.0.1:9090/GoogleCallback",
+      "ClientID": "387070563477-t255nda03lgfps4r9ace3jmj2vbai8bb.apps.googleusercontent.com",
+      "ClientSecret": "8UNiRG4_JXPnTQgCh8DPmP-K",
+      "Scopes": "https://www.googleapis.com/auth/userinfo.email"
+    }
+  }
+}
