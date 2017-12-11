@@ -17,7 +17,7 @@ func Run(httpHandlers http.Handler, s Server) {
 }
 
 func startHTTP(handlers http.Handler, s Server) {
-	log.Fatal(http.ListenAndServe(HttpAddress(s), handlers))
+	log.Fatal(http.ListenAndServe(":9090", handlers))
 }
 
 func HttpAddress(s Server) string {

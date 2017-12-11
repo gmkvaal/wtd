@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"github.com/gmkvaal/wtd/app/model"
 	"github.com/gmkvaal/wtd/app/controller"
+	"log"
 )
 
 
@@ -20,18 +21,21 @@ func AuthHandler(fn func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 
 		tokenFromUser, err := r.Cookie("gAppToken")
 		if err != nil {
+			log.Println(err)
 			controller.RedirectToLogin(w, r)
 			return
 		}
 
 		emailFromUser, err := r.Cookie("gAppEmail")
 		if err != nil {
+			log.Println(err)
 			controller.RedirectToLogin(w, r)
 			return
 		}
 
 		accepted, err := model.CheckIfUserIsValidated(emailFromUser.Value, tokenFromUser.Value, 11)
 		if err != nil {
+			log.Println(err)
 			controller.RedirectToLogin(w, r)
 			return
 		}

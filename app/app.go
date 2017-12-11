@@ -5,10 +5,8 @@ import (
 	"github.com/gorilla/mux"
 	"database/sql"
 	_ "github.com/lib/pq"
-	"fmt"
+
 	"log"
-	"time"
-	"github.com/gmkvaal/wtd/app/model"
 )
 
 type App struct {
@@ -30,7 +28,7 @@ func (a *App) Run(addr string) {
 	log.Fatal(http.ListenAndServe(addr, a.Router))
 }
 
-
+/*
 
 // saveUserCredentials saves the user email, token, and duration of validity both to
 // the DB and as a cookie. This is matched for user validation.
@@ -70,3 +68,4 @@ func (a *App) saveUserCredentials(w http.ResponseWriter, body []byte, token stri
 
 
 
+*/

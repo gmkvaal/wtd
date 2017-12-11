@@ -11,6 +11,8 @@ import (
 	"github.com/gmkvaal/wtd/app/shared/readjson"
 	//"github.com/gmkvaal/wtd/app/shared/database"
 
+	"github.com/gmkvaal/wtd/app/shared/sessions"
+	"github.com/gmkvaal/wtd/app/route"
 )
 
 
@@ -19,6 +21,7 @@ func main() {
 
 	readjson.Load("config.json", config)
 	database.Connect(config.Database.Postgres)
+	controller.ConfigureOAuth(config.OAuth.Google)
 
 	if database.CheckConnection() == true {
 		log.Println("Successfully connected to DB")
@@ -26,9 +29,13 @@ func main() {
 		log.Println("Unable to connect to DB")
 	}
 
-	fmt.Println(config)
+	fmt.Println(config.OAuth.Google.ClientID)
 
-	fmt.Println(server.HttpAddress(config.Server))
+
+	server.Run(route.Routes(), config.Server)
+
+
+
 }
 
 // ParseJSON unmarshals bytes to structs
@@ -42,6 +49,7 @@ type configuration struct {
 	Database database.Database
 	Server server.Server
 	OAuth controller.OAuthConfig
+	Session sessions.Session
 }
 
 

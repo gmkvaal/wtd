@@ -12,6 +12,8 @@ func Routes () *mux.Router {
 
 	router.HandleFunc("/login", httpwrappers.Handler(controller.HandleOAuth2Login))
 	router.HandleFunc("/oauthcallback", httpwrappers.Handler(controller.HandleOAuth2Callback))
-	router.HandleFunc("index", httpwrappers.AuthHandler(controller.Index))
+	router.HandleFunc("/index", httpwrappers.AuthHandler(controller.Index))
+
+	return router
 }
 

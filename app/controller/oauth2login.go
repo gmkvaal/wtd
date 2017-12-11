@@ -27,26 +27,31 @@ type OAuthConfig struct {
 	Google Google
 }
 
-var gConfig = &Google{}
-
 type Google struct {
 	RedirectURL string
 	ClientID string
 	ClientSecret string
-	Scope string
+	Scopes string
 }
 
 var conf = &oauth2.Config{
-	RedirectURL:    gConfig.RedirectURL,
-	ClientID:     gConfig.ClientID,
-	ClientSecret: gConfig.ClientSecret,
-	Scopes:       []string{gConfig.Scope},
-	Endpoint:     google.Endpoint,
+}
+
+func ConfigureOAuth(gConfig Google) {
+	conf = &oauth2.Config{
+		RedirectURL:    gConfig.RedirectURL,
+		ClientID:     gConfig.ClientID,
+		ClientSecret: gConfig.ClientSecret,
+		Scopes:       []string{gConfig.Scopes},
+		Endpoint:     google.Endpoint,
+	}
 }
 
 // handleGoogleLogin generates a random oAuth code and redirects to Google login.
 // The oAuth code is saved as a cookie which is read in handleGoogleCallback
 func HandleOAuth2Login(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println(conf)
 
 	oAuthState := encoding.RandToken()
 	cookie := http.Cookie{Name: "oAuthState", Value: oAuthState, Expires: time.Now().Add(1 * time.Minute)}
@@ -92,9 +97,9 @@ func HandleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//err = a.saveUserCredentials(w, body, token.AccessToken)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	fmt.Println("save user cred ok")
 
