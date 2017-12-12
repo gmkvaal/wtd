@@ -11,15 +11,18 @@ type Server struct {
 	HTTPPort int
 }
 
-
 func Run(httpHandlers http.Handler, s Server) {
 	startHTTP(httpHandlers, s)
 }
 
 func startHTTP(handlers http.Handler, s Server) {
-	log.Fatal(http.ListenAndServe(":9090", handlers))
+	log.Fatal(http.ListenAndServe(httpAddressLocal(s), handlers))
 }
 
-func HttpAddress(s Server) string {
+func httpAddress(s Server) string {
 	return fmt.Sprintf("%s:%d", s.Hostname, s.HTTPPort)
+}
+
+func httpAddressLocal(s Server) string {
+	return fmt.Sprintf(":%d", s.HTTPPort)
 }

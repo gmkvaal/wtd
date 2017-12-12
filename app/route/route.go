@@ -7,11 +7,14 @@ import (
 	"github.com/gmkvaal/wtd/app/controller"
 )
 
+
+//
 func Routes () *mux.Router {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/login", httpwrappers.Handler(controller.HandleOAuth2Login))
 	router.HandleFunc("/oauthcallback", httpwrappers.Handler(controller.HandleOAuth2Callback))
+	router.HandleFunc("/logout", httpwrappers.Handler(controller.HandleLogout))
 	router.HandleFunc("/index", httpwrappers.AuthHandler(controller.Index))
 
 	return router

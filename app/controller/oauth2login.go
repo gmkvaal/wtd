@@ -10,7 +10,8 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/net/context"
-	)
+	"github.com/gmkvaal/wtd/app/shared/sessions"
+)
 
 /*
 var conf = &oauth2.Config{
@@ -96,12 +97,8 @@ func HandleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	//err = a.saveUserCredentials(w, body, token.AccessToken)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	sessions.SaveSession(w, r, true, "authenticated")
 
-	fmt.Println("save user cred ok")
-
-	http.Redirect(w, r, "/index", http.StatusSeeOther)
+	http.Redirect(w, r, "/index", http.StatusTemporaryRedirect)
 }
+
